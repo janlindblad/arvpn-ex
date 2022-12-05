@@ -1,0 +1,120 @@
+module arvpn-svc {
+
+  namespace "http://example.com/arvpn-svc";
+  prefix arvpn-svc;
+
+  import ietf-inet-types {
+    prefix inet;
+  }
+  import tailf-common {
+    prefix tailf;
+  }
+  import tailf-ncs {
+    prefix ncs;
+  }
+
+  description
+    "Bla bla...";
+
+  revision 2023-01-01 {
+    description
+      "Initial revision.";
+  }
+
+  typedef id-string {
+    type string {
+      pattern "[a-zA-Z0-9+_-]+";
+    }
+  }
+
+  typedef sla-level {
+    type enumeration {
+      enum platinum;
+      enum gold;
+      enum silver;
+      enum bronze;
+    }
+  }
+
+  augment /ncs:devices/ncs:device {
+    leaf arvpn-service-capable {
+      type empty;
+    }
+  }
+
+  container arvpn {
+    container datacenters {
+      list datacenter {
+        key name;
+        leaf name {
+          type string;
+        }
+        leaf server-ip {
+          type inet:ip-address;
+        }
+        list firewall {
+          key name;
+          leaf name {
+            type leafref {
+              path "/ncs:devices/ncs:device/ncs:name";
+            }
+          }
+        }
+      }
+    }
+    list arvpn-svc {
+      description "This is an RFS AR-VPN service";
+
+      key name;
+      leaf name {
+        tailf:info "Unique service id";
+        tailf:cli-allow-range;
+        type string;
+      }
+
+      uses ncs:service-data;
+      ncs:servicepoint arvpn-svc-servicepoint;
+
+      leaf client-id {
+        type id-string;
+        mandatory true;
+      }
+      leaf device-id {
+        type id-string;
+        mandatory true;
+      }
+      unique "client-id device-id";
+
+      leaf service-level-agreement {
+        type sla-level;
+        default bronze;
+      }
+
+      leaf datacenter {
+        type leafref {
+          path "/arvpn/datacenters/datacenter/name";
+        }
+        mandatory true;
+      }
+
+      leaf-list arvpn-connection-device {
+        type leafref {
+          path "/ncs:devices/ncs:device/ncs:name";
+        }
+        must deref(.)/../arvpn-service-capable {
+          tailf:dependency "/ncs:devices/ncs:device/arvpn-service-capable";
+          error-message "Device does not support arvpn-service";
+        }
+        description "Client's connection point.";
+      }
+
+      leaf using-vlan {
+        config false;
+        type int32 {
+          range 1..4094;
+        }
+        description "The VLAN used for the VPN. Allocated automatically.";
+      }
+    }
+  }
+}
