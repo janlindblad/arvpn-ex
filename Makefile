@@ -22,7 +22,9 @@ cli:
 ###################################################
 
 netsim:
-	ncs-netsim create-network packages/cisco-asa-cli-6.6/ 1 asa
+	ncs-netsim create-network packages/cisco-asa-cli-6.6 2 asa
+	ncs-netsim add-to-network packages/cisco-xr-um-7.8.1 1 xr
+	ncs-netsim add-to-network packages/nokia-sros-22.7 1 sros
 	ncs-netsim ncs-xml-init > ncs-cdb/netsim-init.xml
 
 ###################################################
@@ -34,13 +36,6 @@ arvpn-svc: packages/arvpn-svc/load-dir/arvpn-svc.fxs
 
 packages/arvpn-svc/load-dir/arvpn-svc.fxs:
 	make -C packages/arvpn-svc/src
-
-###################################################
-# DC-NED
-###################################################
-
-.PHONY: dc-ned
-dc-ned:
 
 ###################################################
 # EXAMPLE-NEDS

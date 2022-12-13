@@ -104,7 +104,7 @@ module arvpn-svc {
   }
 
   augment /ncs:devices/ncs:device {
-    leaf arvpn-service-provider-edge {
+    leaf arvpn-service-vpn {
       type empty;
     }
   }

@@ -1,10 +1,15 @@
-<config-template xmlns="http://tail-f.com/ns/config/1.0">
+<config-template xmlns="http://tail-f.com/ns/config/1.0"
+  xmlns:cisco-asa-cli-6.6="http://tail-f.com/ns/ned-id/cisco-asa-cli-6.6"
+  xmlns:cisco-xr-um-7.8.1-nc-1.0="http://tail-f.com/ns/ned-id/cisco-xr-um-7.8.1-nc-1.0"
+  xmlns:nokia-sros-22.7-nc-1.0="http://tail-f.com/ns/ned-id/nokia-sros-22.7-nc-1.0"
+  >
   <devices xmlns="http://tail-f.com/ns/ncs">
+
+    <!-- Open up port through FW -->
     <?foreach {deref(/datacenter-name)/../firewall}?>
       <device>
         <name>{device-name}</name>
-        <config
-            xmlns:cisco-asa-cli-6.6="http://tail-f.com/ns/ned-id/cisco-asa-cli-6.6">
+        <config>
           <?if-ned-id cisco-asa-cli-6.6:cisco-asa-cli-6.6?>
             <access-list xmlns="http://cisco.com/ned/asa">
               <access-list-id>
@@ -17,6 +22,59 @@
           <?end?>
         </config>
       </device>
+    <?end?>
+
+    <!-- Add VPN termination to DCI -->
+    <?foreach {/arvpn-svc:datacenters/arvpn-svc:datacenter}?>
+      <?set dc-name={name}?>
+      <?foreach {/ncs:devices/ncs:device[arvpn-svc:arvpn-service-vpn]}?>
+        <device>
+          <name>{device-name}</name>
+          <config>
+
+            <!-- Add VPN termination to DCI: For Cisco XR device -->
+            <?if-ned-id cisco-xr-um-7.8.1-nc-1.0:cisco-xr-um-7.8.1-nc-1.0?>
+              <vrfs xmlns="http://cisco.com/ns/yang/Cisco-IOS-XR-um-vrf-cfg">
+                <vrf>
+                  <vrf-name>{/client-name}</vrf-name>
+                  <address-family>
+                    <ipv4>
+                      <unicast>
+                        <import xmlns="http://cisco.com/ns/yang/Cisco-IOS-XR-um-router-bgp-cfg">
+                          <route-target>
+                            <two-byte-as-rts>
+                              <two-byte-as-rt>
+                                <as-number>300</as-number>
+                                <index>300</index>
+                                <stitching>true</stitching>
+                              </two-byte-as-rt>
+                            </two-byte-as-rts>
+                          </route-target>
+                        </import>
+                        <export xmlns="http://cisco.com/ns/yang/Cisco-IOS-XR-um-router-bgp-cfg">
+                          <route-target>
+                            <two-byte-as-rts>
+                              <two-byte-as-rt>
+                                <as-number>300</as-number>
+                                <index>300</index>
+                                <stitching>true</stitching>
+                              </two-byte-as-rt>
+                            </two-byte-as-rts>
+                          </route-target>
+                        </export>
+                      </unicast>
+                    </ipv4>
+                  </address-family>
+                </vrf>
+              </vrfs>
+
+            <!-- Add VPN termination to DCI: For Nokia SROS device -->
+            <?elif-ned-id nokia-sros-22.7-nc-1.0:nokia-sros-22.7-nc-1.0?>
+              <!-- ... TBD ... -->
+            <?end?>
+          </config>
+        </device>
+      <?end?>
     <?end?>
   </devices>
 </config-template>
