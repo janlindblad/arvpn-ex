@@ -1,20 +1,22 @@
 <config-template xmlns="http://tail-f.com/ns/config/1.0">
   <devices xmlns="http://tail-f.com/ns/ncs">
-    <device>
-      <!--
-          Select the devices from some data structure in the service
-          model. In this skeleton the devices are specified in a leaf-list.
-          Select all devices in that leaf-list:
-      -->
-      <name>{/device}</name>
-      <config>
-        <!--
-            Add device-specific parameters here.
-            In this skeleton the, java code sets a variable DUMMY, use it
-            to set something on the device e.g.:
-            <ip-address-on-device>{$DUMMY}</ip-address-on-device>
-        -->
-      </config>
-    </device>
+    <?foreach {deref(/datacenter-name)/../firewall}?>
+      <device>
+        <name>{device-name}</name>
+        <config
+            xmlns:cisco-asa-cli-6.6="http://tail-f.com/ns/ned-id/cisco-asa-cli-6.6">
+          <?if-ned-id cisco-asa-cli-6.6:cisco-asa-cli-6.6?>
+            <access-list xmlns="http://cisco.com/ned/asa">
+              <access-list-id>
+                <id>client-{/client-name}</id>
+                <rule>
+                  <id>extended permit tcp {/client-ip} 255.255.255.255 any eq 7777</id>
+                </rule>
+              </access-list-id>
+            </access-list>
+          <?end?>
+        </config>
+      </device>
+    <?end?>
   </devices>
 </config-template>

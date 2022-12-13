@@ -3,6 +3,9 @@
   <package-version>1.0</package-version>
   <description>Generated Python package</description>
   <ncs-min-version>6.0</ncs-min-version>
+  <required-package>
+    <name>cisco-asa-cli-6.6</name>
+  </required-package>
 
   <component>
     <name>main</name>
