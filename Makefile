@@ -46,13 +46,19 @@ dc-ned:
 # EXAMPLE-NEDS
 ###################################################
 
-EXAMPLE_NEDS = cisco-asa-cli-6.6
+EXAMPLE_NEDS = cisco-asa-cli-6.6 cisco-xr-um-7.8.1 nokia-sros-22.7
 NEDS_PATH = $(EXAMPLE_NEDS:%=packages/%)
 
 .PHONY: example-neds
-example-neds: $(NEDS_PATH)
-	make -C $(NEDS_PATH:%=%/src)
 
+example-neds: $(NEDS_PATH)
+	for ned in $(NEDS_PATH:%=%/src); do make -C $$ned; done
+
+# Build NETCONF NEDs from YANG source
+packages/%: yangs/%
+	ncs-make-package --netconf-ned $< $(notdir $@) --dest $@ --no-java --no-python
+
+# Copy CLI NEDs from NSO examples
 packages/%: $(NCS_DIR)/packages/neds/%
 	cp -r $< $@
 
