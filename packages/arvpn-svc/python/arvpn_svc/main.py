@@ -17,12 +17,13 @@ class ServiceCallbacks(Service):
         template.apply('arvpn-svc-template', vars)
 
         if service.service_level_agreement in ['gold', 'platinum']:
-            template.apply('arvpn-svc-template-extras', vars)
+            #template.apply('arvpn-svc-template-extras', vars)
+            pass
 
-    def allocate_vlan(self, publisher):
+    def allocate_vlan(self, client_name):
         # Let's make this as simple as possible for now:
         # Just return a hash on the name (1000..2999)
-        return 1000 + hash(publisher.name) % 2000
+        return 1000 + hash(client_name) % 2000
 
 
 class Main(ncs.application.Application):

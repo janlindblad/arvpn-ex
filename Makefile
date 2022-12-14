@@ -3,7 +3,7 @@
 ###################################################
 
 .PHONY: all start stop cli
-all: example-neds dc-ned arvpn-svc netsim
+all: example-neds arvpn-svc netsim
 
 start: stop
 	@if [ ! -d netsim ]; then echo "You need to   make all   first."; false; fi
